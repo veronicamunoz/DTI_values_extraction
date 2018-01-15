@@ -89,8 +89,8 @@ Xin=spm_read_vols(h1);
 
 if (idx1 ~= 0) || (idx2 ~= 0) 
     Xin=Xin(:,:,idx2+1:(size(Xin,3)-idx1),:);
-    [h1.dim]=deal([size(Xin,1) size(Xin,2) size(Xin,3)]);
-    spm_write_vol(h1, Xin); %Error! Can only handle a maximum of 3 dimensions.
+    h1(:).dim=[size(Xin,1) size(Xin,2) size(Xin,3)];
+    spm_write_vol(h1, Xin);
 end
 
 

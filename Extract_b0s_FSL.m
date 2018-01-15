@@ -1,4 +1,4 @@
-function Extract_b0s_FSL(PathSujetS, Path2, FSLcommand)
+function [idx1,idx2]= Extract_b0s_FSL(PathSujetS, Path2, FSLcommand)
 
 % ============= EXTRACTION b0_P =============
 NomDossier = TrouverNomDossier(PathSujetS,'DTI_64dir');
@@ -88,27 +88,11 @@ if ~isempty(NomDossierB0)
         rb0_A=spm_read_vols(h2);
 
         idx1= input('Coupes supérieures à rogner : ');
-        
-        if idx1 ~= 0 
-        b0_P=b0_P(:,:,1:(size(b0_P,3)-idx1));
-        rb0_A=rb0_A(:,:,1:(size(rb0_A,3)-idx1));
-
-            if size(b0_P)==size(rb0_A)
-                h1.dim=size(b0_P);
-                h2.dim=size(rb0_A);
-                spm_write_vol(h1, b0_P);
-                spm_write_vol(h2, rb0_A);
-            else
-                disp('ERREUR de dimensions entre b0_P et rb0_A');
-            end
-        end
-        
         idx2= input('Coupes inférieures à rogner : ');
-        if idx2 ~= 0
-        b0_P=b0_P(:,:,idx2:size(b0_P,3));
-        rb0_A=rb0_A(:,:,idx2:size(rb0_A,3));
-        b0_P(isnan(rb0_A))=0;
-        rb0_A(isnan(rb0_A))=0; 
+        
+        if (idx1 ~= 0) || (idx2 ~= 0) 
+        b0_P=b0_P(:,:,idx2+1:(size(b0_P,3)-idx1));
+        rb0_A=rb0_A(:,:,idx2+1:(size(rb0_A,3)-idx1));
 
             if size(b0_P)==size(rb0_A)
                 h1.dim=size(b0_P);
