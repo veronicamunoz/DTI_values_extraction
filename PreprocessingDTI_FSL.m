@@ -1,4 +1,5 @@
-function NomFichierNiiX = PreprocessingDTI_FSL(Indir,Outdir,NomFichierNii,B0dir, idx1, idx2)
+function NomFichierNiiX = PreprocessingDTI_FSL(Indir,Outdir,NomFichierNii,B0dir)
+% function NomFichierNiiX = PreprocessingDTI_FSL(Indir,Outdir,NomFichierNii,B0dir, idx1, idx2)
 % FSLcommand='/usr/bin/fsl5.0-';
 FSLcommand='/usr/share/fsl/5.0/bin/';
 %Outdir=[Outdir '/'];
@@ -83,15 +84,15 @@ else
     copyfile(fullfile(Indir, NomFichierNii),fullfile(Outdir,NomFichierNiiX));
 end
 
-%On modifie XinFile pour avoir les mêmes dimensions que b0_P
-h1=spm_vol([Outdir NomFichierNiiX]);
-Xin=spm_read_vols(h1);
-
-if (idx1 ~= 0) || (idx2 ~= 0) 
-    Xin=Xin(:,:,idx2+1:(size(Xin,3)-idx1),:);
-    [h1.dim]=deal([size(Xin,1) size(Xin,2) size(Xin,3)]);
-    spm_write_vol(h1, Xin); %Error! Can only handle a maximum of 3 dimensions.
-end
+% %On modifie XinFile pour avoir les mêmes dimensions que b0_P
+% h1=spm_vol([Outdir NomFichierNiiX]);
+% Xin=spm_read_vols(h1);
+% 
+% if (idx1 ~= 0) || (idx2 ~= 0) 
+%     Xin=Xin(:,:,idx2+1:(size(Xin,3)-idx1),:);
+%     [h1.dim]=deal([size(Xin,1) size(Xin,2) size(Xin,3)]);
+%     spm_write_vol(h1, Xin); %Error! Can only handle a maximum of 3 dimensions.
+% end
 
 
 %----------------------------------------------
@@ -174,8 +175,7 @@ if ~isempty(B0dir);
     if status ==0
         disp('Correction des distorsions sur les b0 des images de diffusions  OK')
     else
-        warning('La correction des distorsions sur la B0 a échoué, Vérification requise (dbcont pour continuer)');
-        
+        warning('La correction des distorsions sur la B0 a échoué, Vérification requise (dbcont pour continuer)');   
     end
 else
     disp('Pas de Bo valide, La correction n''inclura pas la correction d''artefact de suceptibilité')

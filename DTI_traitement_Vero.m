@@ -15,16 +15,25 @@ C3Dcommand='/home/veronica/Downloads/Programs/c3d/bin/';
 Doss= dir([ Path2 '*']);
 Doss = Doss(arrayfun(@(x) ~strcmp(x.name(1),'.'),Doss));% pour supprimer les . et .. du résultat du dir
 
+% for i = 1 : size(Doss,1)
+%     if Doss(i,1).isdir==1 && isempty(strfind(Doss(i,1).name,'DicomFor64'))
+%        PathSujetS=[Path2 Doss(i,1).name '/'];
+%        DTI_folders=dir([PathSujetS '*DTI*']);
+%        if exist([PathSujetS 'DICOM'],'dir') && isempty(DTI_folders) 
+%            disp('DICOM');
+%            disp('Converting DICOM to nifti');
+%            disp('Organizing files');
+%            Prepare_dicom4fsl(PathSujetS);
+%        end
+%     end
+% end
+
+% concat_DTI=fullfile(Path, 'DTI_values_extraction', 'concat_DTI.sh');
+% status=system(concat_DTI);
+       
 for i = 1 : size(Doss,1)
     if Doss(i,1).isdir==1
-       PathSujetS=[Path2 Doss(i,1).name '/'];
-       
-       if exist([PathSujetS 'DICOM'],'dir')
-           disp('DICOM');
-           %disp('Converting DICOM to nifti');
-           %disp('Organizing files');
-           %Prepare_dicom4fsl(PathSujetS);
-       end
+       PathSujetS=[Path2 Doss(i,1).name '/'];       
        
        NomDossier = TrouverNomDossier(PathSujetS,'DTI_64dir');
            
@@ -36,11 +45,11 @@ for i = 1 : size(Doss,1)
            outdir= [PathSujetS 'DTI/'];
            inFile= TrouverNomFichier(indir, '.nii');
            NomDossierB0 = TrouverNomDossier(PathSujetS,'PrepAPA');
-           [sup,inf] = Extract_b0s_FSL(PathSujetS, Path2, FSLcommand);
+           Extract_b0s_FSL(PathSujetS, Path2, FSLcommand);
            
            if exist([outdir 'b0_PA.nii'], 'file')
                disp('Extract_b0s_FSL a bien fini');
-               XinFile = PreprocessingDTI_FSL(indir,outdir,inFile,NomDossierB0,sup,inf); % Prépare les données DTI
+               XinFile = PreprocessingDTI_FSL(indir,outdir,inFile,NomDossierB0); % Prépare les données DTI
                %XinFile = ['X' inFile];
                cd(outdir);
                if exist([outdir 'b0_corr.nii'],'file')
@@ -65,15 +74,27 @@ for i = 1 : size(Doss,1)
 
                %         system([FSLcommand2 'eddy --imain=' sinFile ' --mask=' strrep(outdir,' ','\ ') 'mask2_mask.nii --index=' strrep(outdir,' ','\ ') 'index.txt --acqp=' strrep(outdir,' ','\ ') 'acqparams.txt --bvecs=' strrep(sinFile,'.nii', '.bvec') ' --bvals=' strrep(sinFile,'.nii', '.bval')  ' --fwhm=0  --slm=linear --topup=' strrep(outdir,' ','\ ') 'topup_results --flm=quadratic --out=' strrep(outdir,' ','\ ') 'DTI_esc.nii']);
                %status=system([FSLcommand2 'eddy --imain=' sinFile ' --mask=' [outdir 'b0_ss_mask.nii'] ' --index=' [outdir 'index.txt'] ' --acqp=' [outdir 'acqparams.txt'] ' --bvecs=' strrep(sinFile,'.nii', '.bvec') ' --bvals=' strrep(sinFile,'.nii', '.bval')  ' --fwhm=0 --resamp=jac --interp=spline --dont_peas --fep --repol --flm=quadratic --slm=linear --topup=' [outdir 'topup_results'] ' --out=' [outdir 'DTI_esc.nii']]);
+               disp('---------Eddy correction----------');
                status=system([FSLcommand 'eddy_openmp --imain=' XinFile ' --mask=b0_ss_mask.nii --index=index.txt --acqp=acqparams.txt --bvecs=' strrep(XinFile,'.nii', '.bvec') ' --bvals=' strrep(XinFile,'.nii', '.bval') ' --out=DTI_esc --topup=topup_results --flm=quadratic --slm=linear --fwhm=0 --fep --interp=spline --resamp=jac --dont_peas']);
-               Nombvec=TrouverNomFichier(outdir,'bvec');
-               Nombval=TrouverNomFichier(outdir,'bval');
-               system([FSLcommand 'dtifit --data=DTI_esc.nii --out=dti --mask=b0_ss_mask.nii --bvecs=' Nombvec ' --bvals=' Nombval ' --save_tensor'])
-               nomFichierMD = TrouverNomFichier(outdir,'MD');
-               nomFichierFA = TrouverNomFichier(outdir,'FA');
-               if ~isempty(nomFichierMD)
-                   ValArtefactDTI(outdir,nomFichierMD,nomFichierFA)
+               if status ==0
+                   disp('DONE');
+               else
+                   warning('Eddy correction failed!!!!');
                end
+%                Nombvec=TrouverNomFichier(outdir,'bvec');
+%                Nombval=TrouverNomFichier(outdir,'bval');
+               disp('--------DTIFIT: Extraction de cartes MD et FA---------');
+               system([FSLcommand 'dtifit --data=DTI_esc.nii --out=dti --mask=b0_ss_mask.nii --bvecs='  strrep(XinFile,'.nii', '.bvec') ' --bvals=' strrep(XinFile,'.nii', '.bval') ' --save_tensor']);
+               if status == 0
+                   disp('DONE');
+               else
+                   warning('DTIFIT failed!!!!');
+               end
+%                nomFichierMD = TrouverNomFichier(outdir,'MD');
+%                nomFichierFA = TrouverNomFichier(outdir,'FA');
+%                if ~isempty(nomFichierMD)
+%                    ValArtefactDTI(outdir,nomFichierMD,nomFichierFA)
+%                end
            end
            cd(Path2)
        end
