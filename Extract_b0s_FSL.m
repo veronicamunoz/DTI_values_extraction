@@ -81,50 +81,34 @@ if ~isempty(NomDossierB0)
         disp('Vérification de la coregistration, pressez une touche pour continuer');
         pause    
 
-        %Recoupage de b0_P par rapport à rb0_A
-        h1=spm_vol([outdir 'b0_P.nii']);
-        h2=spm_vol([outdir 'rb0_A.nii']);
-        b0_P=spm_read_vols(h1);
-        rb0_A=spm_read_vols(h2);
-
-        idx1= input('Coupes supérieures à rogner : ');
-        
-        if idx1 ~= 0 
-        b0_P=b0_P(:,:,1:(size(b0_P,3)-idx1));
-        rb0_A=rb0_A(:,:,1:(size(rb0_A,3)-idx1));
-
-            if size(b0_P)==size(rb0_A)
-                h1.dim=size(b0_P);
-                h2.dim=size(rb0_A);
-                spm_write_vol(h1, b0_P);
-                spm_write_vol(h2, rb0_A);
-            else
-                disp('ERREUR de dimensions entre b0_P et rb0_A');
-            end
-        end
-        
-        idx2= input('Coupes inférieures à rogner : ');
-        if idx2 ~= 0
-        b0_P=b0_P(:,:,idx2:size(b0_P,3));
-        rb0_A=rb0_A(:,:,idx2:size(rb0_A,3));
-        b0_P(isnan(rb0_A))=0;
-        rb0_A(isnan(rb0_A))=0; 
-
-            if size(b0_P)==size(rb0_A)
-                h1.dim=size(b0_P);
-                h2.dim=size(rb0_A);
-                spm_write_vol(h1, b0_P);
-                spm_write_vol(h2, rb0_A);
-            else
-                disp('ERREUR de dimensions entre b0_P et rb0_A');
-            end
-        end
-        
-        %system([FSLcommand 'flirt -in ' [outdir 'b0_A.nii'] ' -ref ' [outdir 'b0_P.nii'] '-interp spline -out ' [outdir 'rb0_A.nii']]);
-        clear matlabbatch
-        spm_check_registration([outdir 'b0_P.nii'],[outdir 'rb0_A.nii'])
-        disp('Vérification de la coregistration, pressez une touche pour continuer');
-        pause    
+%         %Recoupage de b0_P par rapport à rb0_A
+%         h1=spm_vol([outdir 'b0_P.nii']);
+%         h2=spm_vol([outdir 'rb0_A.nii']);
+%         b0_P=spm_read_vols(h1);
+%         rb0_A=spm_read_vols(h2);
+% 
+%         idx1= input('Coupes supérieures à rogner : ');
+%         idx2= input('Coupes inférieures à rogner : ');
+%         
+%         if (idx1 ~= 0) || (idx2 ~= 0) 
+%         b0_P=b0_P(:,:,idx2+1:(size(b0_P,3)-idx1));
+%         rb0_A=rb0_A(:,:,idx2+1:(size(rb0_A,3)-idx1));
+% 
+%             if size(b0_P)==size(rb0_A)
+%                 h1.dim=size(b0_P);
+%                 h2.dim=size(rb0_A);
+%                 spm_write_vol(h1, b0_P);
+%                 spm_write_vol(h2, rb0_A);
+%             else
+%                 disp('ERREUR de dimensions entre b0_P et rb0_A');
+%             end
+%         end
+%         
+%         %system([FSLcommand 'flirt -in ' [outdir 'b0_A.nii'] ' -ref ' [outdir 'b0_P.nii'] '-interp spline -out ' [outdir 'rb0_A.nii']]);
+%         clear matlabbatch
+%         spm_check_registration([outdir 'b0_P.nii'],[outdir 'rb0_A.nii'])
+%         disp('Vérification de la coregistration, pressez une touche pour continuer');
+%         pause    
         
         %fslmerge:merge b0_P and rb0_A into b0_PA
         system([FSLcommand 'fslmerge -t ' strrep(outdir,' ','\ ') 'b0_PA.nii ' strrep(outdir,' ','\ ') 'b0_P.nii ' strrep(outdir,' ','\ ') 'rb0_A.nii']); %merge les 2 b0 pour topup
